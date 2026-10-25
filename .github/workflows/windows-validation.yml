@@ -1,0 +1,47 @@
+name: Windows validation
+
+on:
+  pull_request:
+  push:
+    branches:
+      - codex/msix-auto-build-identity-20261025
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-and-build-tool:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: requirements-build.txt
+
+      - name: Run tests
+        run: python -m unittest discover -s tests -v
+
+      - name: Install build dependency
+        run: python -m pip install --requirement requirements-build.txt
+
+      - name: Build Windows EXE
+        shell: powershell
+        run: ./scripts/build-tool.ps1 -SkipInstall
+
+      - name: Upload QA EXE
+        uses: actions/upload-artifact@v7
+        with:
+          name: MSIXAutoBuildIdentity-Windows-QA
+          path: |
+            dist/MSIXAutoBuildIdentity.exe
+            dist/MSIXAutoBuildIdentity.exe.sha256
+          if-no-files-found: error
