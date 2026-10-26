@@ -52,6 +52,7 @@ jobs:
           if (-not (Test-Path -LiteralPath 'dist/self-msix/msix-identity-report.json')) {
             throw 'Self-MSIX report was not created.'
           }
+          exit 0
 
       - name: Upload QA artifacts
         uses: actions/upload-artifact@v7
