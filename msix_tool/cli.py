@@ -6,6 +6,7 @@ import sys
 from pathlib import Path
 
 from .pipeline import inspect_msix, run_pipeline
+from .self_package import build_self_msix
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -23,13 +24,30 @@ def _parser() -> argparse.ArgumentParser:
     inspect = sub.add_parser("inspect", help="Extract identity from an existing MSIX")
     inspect.add_argument("msix", type=Path)
     inspect.add_argument("--output", type=Path, default=Path.cwd() / "identity-output")
+    self_msix = sub.add_parser("self-msix", help="Build or HOLD the Windows-data MSIX")
+    self_msix.add_argument("--root", type=Path, default=Path.cwd())
+    self_msix.add_argument(
+        "--inputs", type=Path, default=Path.cwd() / "store" / "self-msix-inputs.json"
+    )
+    self_msix.add_argument(
+        "--exe", type=Path, default=Path.cwd() / "dist" / "MSIXAutoBuildIdentity.exe"
+    )
+    self_msix.add_argument(
+        "--output", type=Path, default=Path.cwd() / "dist" / "self-msix"
+    )
+    gui_check = sub.add_parser("gui-check", help="Validate bilingual GUI layout")
+    gui_check.add_argument("--width", type=int, default=1024)
+    gui_check.add_argument("--height", type=int, default=768)
+    gui_check.add_argument(
+        "--output", type=Path, default=Path.cwd() / "gui-validation.json"
+    )
     sub.add_parser("gui", help="Open the bilingual desktop GUI")
     return parser
 
 
 def main(argv: list[str] | None = None) -> int:
     if sys.stdout is not None and hasattr(sys.stdout, "reconfigure"):
-        sys.stdout.reconfigure(errors="backslashreplace")
+        sys.stdout.reconfigure(encoding="utf-8", errors="backslashreplace")
     parser = _parser()
     args = parser.parse_args(argv)
     if args.command in {None, "gui"}:
@@ -37,6 +55,23 @@ def main(argv: list[str] | None = None) -> int:
 
         gui_main()
         return 0
+    if args.command == "gui-check":
+        from .gui_validation import validate_gui
+
+        payload = validate_gui(args.width, args.height, args.output)
+        if sys.stdout is not None:
+            print(json.dumps(payload, ensure_ascii=False, indent=2))
+        return 0 if payload["status"] == "PASS" else 2
+    if args.command == "self-msix":
+        report = build_self_msix(
+            root=args.root,
+            inputs_path=args.inputs,
+            exe_path=args.exe,
+            output_directory=args.output,
+        )
+        if sys.stdout is not None:
+            print(json.dumps(report.as_dict(), ensure_ascii=False, indent=2))
+        return 0 if not report.holds else 1
     if args.command == "inspect":
         report = inspect_msix(args.msix, args.output)
     else:
@@ -49,7 +84,8 @@ def main(argv: list[str] | None = None) -> int:
             execute_build=not args.resolve_only,
             progress=lambda message: print(message, flush=True),
         )
-    print(json.dumps(report.as_dict(), ensure_ascii=False, indent=2))
+    if sys.stdout is not None:
+        print(json.dumps(report.as_dict(), ensure_ascii=False, indent=2))
     return 0 if not report.holds else 1
 
 

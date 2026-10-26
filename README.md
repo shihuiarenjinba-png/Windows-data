@@ -25,6 +25,16 @@ python run.py build "AI Upload Guard" `
 
 # 既存MSIXからIdentityのみ収集
 python run.py inspect C:\build\Product.msix --output C:\build\identity
+
+# Windows-data自身のMSIX候補を生成（正式情報が不足する場合はHOLDレポートのみ生成）
+python run.py self-msix `
+  --inputs store\self-msix-inputs.json `
+  --exe dist\MSIXAutoBuildIdentity.exe `
+  --output dist\self-msix
+
+# 日英GUIを1024×768で自動レイアウト検証
+python run.py gui-check --width 1024 --height 768 `
+  --output dist\validation\gui-source-1024x768.json
 ```
 
 出力は以下の3ファイルです。
@@ -48,6 +58,8 @@ python run.py inspect C:\build\Product.msix --output C:\build\identity
 ## Safety boundary / 安全境界
 
 - 対象リポジトリ、ブランチ、commit、Partner Center由来のIdentity、承認済みVersion、承認済み素材が確定できない場合は`HOLD`します。
+- Windows-data自身のIdentity入力は`store/self-msix-inputs.json`で管理します。初期値はすべて未確認で、正式情報が揃うまではEXEのハッシュとHOLDレポートだけを出力し、MSIXを作りません。
+- 自己MSIXを作成できる場合も成果物名へ`QA_UNSIGNED`を明記し、再展開したManifest、EXE SHA-256、埋め込みsource commitを検証します。既存の同一Version成果物は上書きしません。
 - 複数候補が僅差の場合は自動選択しません。
 - Partner Centerへの提出、公開、予約名作成、署名の偽装は行いません。
 - 既存のWindows CheckerやStore申請ツールの検査・申請機能は重複実装しません。
@@ -59,7 +71,10 @@ python run.py inspect C:\build\Product.msix --output C:\build\identity
 ```powershell
 python -m unittest discover -s tests -v
 powershell -ExecutionPolicy Bypass -File scripts\build-tool.ps1
+powershell -ExecutionPolicy Bypass -File scripts\test-exe-policy.ps1
 ```
+
+`test-exe-policy.ps1`は生成EXEの起動結果、Authenticode状態、SHA-256、1024×768 GUI検証をJSONに保存します。Windowsのアプリケーション制御で拒否された場合は`APPLICATION_CONTROL_BLOCKED`と記録し、ポリシーを変更・回避しません。
 
 機能開発は`codex/msix-auto-build-identity-20261025`で行います。`main`へ機能を直接実装・マージしません。
 
