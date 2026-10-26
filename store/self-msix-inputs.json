@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "product_repo": "Windows-data",
+  "owner_confirmed_store_id": null,
+  "store_id_verification": "UNKNOWN",
+  "partner_center_reserved_display_name": null,
+  "display_name_verification": "UNKNOWN",
+  "package_identity_name": null,
+  "package_identity_name_verification": "UNKNOWN",
+  "package_identity_publisher": null,
+  "package_identity_publisher_verification": "UNKNOWN",
+  "publisher_display_name": null,
+  "publisher_display_name_verification": "UNKNOWN",
+  "package_family_name": null,
+  "package_family_name_verification": "UNKNOWN",
+  "package_sid": null,
+  "package_sid_verification": "UNKNOWN",
+  "approved_store_version": null,
+  "package_version_approval": "UNKNOWN",
+  "brand_assets_approval": "UNKNOWN",
+  "architecture": "x64",
+  "expected_executable": "MSIXAutoBuildIdentity.exe",
+  "application_id": "App",
+  "description": "Build Windows MSIX packages and collect package identity metadata",
+  "logo_paths": [
+    "store-assets/assets/StoreLogo.png",
+    "store-assets/assets/Square44x44Logo.png",
+    "store-assets/assets/Square150x150Logo.png"
+  ],
+  "store_submission": "NOT_AUTHORIZED",
+  "sales_release": "HOLD",
+  "notes": "Enter only Partner Center verified identity, an approved four-part version, and approved brand assets. Do not infer or use placeholders."
+}

@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "windows-msix-auto-build-identity"
+version = "0.1.0"
+description = "Resolve GitHub Windows apps, run existing builds, and collect MSIX identity metadata."
+requires-python = ">=3.11"
+dependencies = []
+
+[project.scripts]
+msix-identity = "msix_tool.cli:main"
+
+[tool.setuptools]
+packages = ["msix_tool"]
