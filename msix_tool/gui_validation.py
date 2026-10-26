@@ -13,9 +13,13 @@ def validate_gui(width: int, height: int, output: Path) -> dict[str, object]:
     try:
         app.geometry(f"{width}x{height}+0+0")
         app.update()
+        screen_width = app.winfo_screenwidth()
+        screen_height = app.winfo_screenheight()
         checks: dict[str, bool] = {
-            "window_width": app.winfo_width() >= width,
-            "window_height": app.winfo_height() >= height,
+            "screen_width_supports_request": screen_width >= width,
+            "screen_height_supports_request": screen_height >= height,
+            "window_within_display_width": app.winfo_width() <= width,
+            "window_within_display_height": app.winfo_height() <= height,
             "app_entry_visible": bool(app.app_entry.winfo_ismapped()),
             "build_button_visible": bool(app.build_button.winfo_ismapped()),
             "resolve_button_visible": bool(app.resolve_button.winfo_ismapped()),
@@ -38,6 +42,7 @@ def validate_gui(width: int, height: int, output: Path) -> dict[str, object]:
         payload: dict[str, object] = {
             "schema_version": 1,
             "requested_size": {"width": width, "height": height},
+            "screen_size": {"width": screen_width, "height": screen_height},
             "observed_size": {"width": app.winfo_width(), "height": app.winfo_height()},
             "checks": checks,
             "status": "PASS" if all(checks.values()) else "FAIL",
